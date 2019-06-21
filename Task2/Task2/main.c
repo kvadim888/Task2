@@ -6,8 +6,8 @@
 
 typedef	union
 {
-	uint8_t		bytes[100];
-	uint16_t	words[50];
+	uint8_t		bytes[2];
+	uint16_t	word;
 }		t_buffer;
 
 int32_t		fix_scale(double gain)
@@ -16,44 +16,43 @@ int32_t		fix_scale(double gain)
 	return float_to_fix(scale);
 }
 
+
+
 int main(int ac, char **av)
 {
-	uint8_t header[44];
-	t_buffer buffer;
-	size_t len = 0;
-	FILE *input;
-	FILE *output;
+	size_t		len = 0;
+	t_buffer	buff;
 
-	if (fopen_s(&input, av[1], "rb") || fopen_s(&output, av[2], "wb"))
-		exit(1);
-
-	int32_t scale = fix_scale(atof(av[3]));
-
-	if (fread(header, sizeof(uint8_t), 44, input) < 44)
+	if (ac != 4)
 	{
-		printf("%s: Invalid file\n", av[1]);
+		printf("Not enought input arguments\n");
 		exit(1);
 	}
+	t_wavfile *input = wav_rdopen(av[1]);
+	t_wavfile *output = wav_wropen(av[2], &input->header);
+	double	gain = atof(av[3]);
+//	double	gain = 0;
+	int32_t scale = fix_scale(gain);
 
-	if (fwrite(header, sizeof(uint8_t), 44, output) < 44)
+	printf("\nscale = %.8f\nControl: 20log(%.8f)=%.8f\n", fix_to_float(scale), fix_to_float(scale), gain);
+
+	while ((len = wav_read(input)) > 0)
 	{
-		printf("%s: Unnable to write a file\n", av[2]);
-		exit(1);
-	}
-	while ((len = fread(buffer.bytes, sizeof(uint8_t), 100, input)) > 0)
-	{
-		for (size_t i = 0; i < len / 2; i++)
-			fix_mul(buffer.words[i], scale);
-		if (fwrite(buffer.bytes, sizeof(uint8_t), len, output) < len)
+		wav_buffclear(output);
+		for (int i = 0; i < len; i += input->header.bits_per_sample/8)
 		{
-			printf("%s: Unnable to write a file\n", av[2]);
-			exit(1);
+			buff.bytes[0] = input->data[i];
+			buff.bytes[1] = input->data[i + 1];
+			buff.word = (int16_t)fix_mul(buff.word, scale);
+			output->data[i] = buff.bytes[0];
+			output->data[i + 1] = buff.bytes[1];
 		}
-		printf("len = %d |%s|\n", len, buffer.bytes);
-		memset(buffer.bytes, 0, 100);
+		wav_write(output);
+		wav_buffclear(input);
 	}
-	printf("complete\n");
-	fclose(input);
-	fclose(output);
+
+	wav_info(av[2], &output->header);
+	wav_close(&input);
+	wav_close(&output);
 	return 0;
 }

@@ -23,6 +23,7 @@ int32_t fix_add(int32_t a, int32_t b)
 	uint32_t tmp_a = a;
 	uint32_t tmp_b = b;
 	uint32_t sum = tmp_a + tmp_b;
+
 	if (!((tmp_a ^ tmp_b) & INT32_MIN) && ((tmp_a ^ sum) & INT32_MIN))
 	{
 		printf("sum overflow \n");
@@ -87,7 +88,10 @@ int32_t fix_msub(int32_t acc, int32_t a, int32_t b)
 
 int32_t	fix_leftshift(int32_t num, int8_t shift)
 {
-	return (num << shift);
+	uint32_t res = num << shift;
+	if ((res ^ num) & INT32_MIN)
+		return (num > 0) ? INT32_MAX : INT32_MIN;
+	return res;
 }
 
 int32_t	fix_rightshift(int32_t num, int8_t shift)
