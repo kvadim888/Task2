@@ -31,6 +31,7 @@ typedef	struct
 	t_wavheader header;
 	uint8_t		*data;
 	size_t		datalen;
+	size_t		samplen;
 }		t_wavfile;
 
 #pragma pack(pop)

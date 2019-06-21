@@ -8,7 +8,7 @@ typedef	union
 {
 	uint8_t		bytes[2];
 	uint16_t	word;
-}		t_buffer;
+}				t_buffer;
 
 int32_t		fix_scale(double gain)
 {
@@ -16,12 +16,11 @@ int32_t		fix_scale(double gain)
 	return float_to_fix(scale);
 }
 
-
-
 int main(int ac, char **av)
 {
 	size_t		len = 0;
-	t_buffer	buff;
+	int16_t		*buffer_in;
+	int16_t		*buffer_out;
 
 	if (ac != 4)
 	{
@@ -33,20 +32,14 @@ int main(int ac, char **av)
 	double	gain = atof(av[3]);
 //	double	gain = 0;
 	int32_t scale = fix_scale(gain);
-
-	printf("\nscale = %.8f\nControl: 20log(%.8f)=%.8f\n", fix_to_float(scale), fix_to_float(scale), gain);
-
+	printf("\n scale = %.8f\n Control: 20log(%.8f)=%.8f\n", fix_to_float(scale), fix_to_float(scale), gain);
+	buffer_in = input->data;
+	buffer_out = output->data;
 	while ((len = wav_read(input)) > 0)
 	{
 		wav_buffclear(output);
-		for (int i = 0; i < len; i += input->header.bits_per_sample/8)
-		{
-			buff.bytes[0] = input->data[i];
-			buff.bytes[1] = input->data[i + 1];
-			buff.word = (int16_t)fix_mul(buff.word, scale);
-			output->data[i] = buff.bytes[0];
-			output->data[i + 1] = buff.bytes[1];
-		}
+		for (int i = 0; i < input->datalen; i++)
+			buffer_out[i] = (int16_t)fix_mul(buffer_in[i], scale);
 		wav_write(output);
 		wav_buffclear(input);
 	}

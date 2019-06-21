@@ -1,6 +1,6 @@
 #include "libwav.h"
 
-t_wavfile * wav_rdopen(const char *path)
+t_wavfile *wav_rdopen(const char *path)
 {
 	t_wavfile *wavfile;
 
@@ -17,11 +17,12 @@ t_wavfile * wav_rdopen(const char *path)
 	}
 	wav_info(path, &wavfile->header);
 	wavfile->data = calloc(100, (wavfile->header.channels * wavfile->header.bits_per_sample) / 8);
-	wavfile->datalen = 100 * (wavfile->header.channels * wavfile->header.bits_per_sample) / 8;
+	wavfile->samplen = wavfile->header.bits_per_sample / 8;
+	wavfile->datalen = 100 * wavfile->header.channels;
 	return (wavfile);
 }
 
-t_wavfile * wav_wropen(const char *path, t_wavheader *header)
+t_wavfile *wav_wropen(const char *path, t_wavheader *header)
 {
 	t_wavfile *wavfile;
 
@@ -39,7 +40,8 @@ t_wavfile * wav_wropen(const char *path, t_wavheader *header)
 	}
 	wav_info(path, &wavfile->header);
 	wavfile->data = calloc(100, (wavfile->header.channels * wavfile->header.bits_per_sample) / 8);
-	wavfile->datalen = 100 * (wavfile->header.channels * wavfile->header.bits_per_sample) / 8;
+	wavfile->samplen = wavfile->header.bits_per_sample / 8;
+	wavfile->datalen = 100 * wavfile->header.channels;
 	return (wavfile);
 }
 
@@ -47,20 +49,20 @@ size_t wav_read(t_wavfile * file)
 {
 	if (file == NULL || file->fs == NULL)
 		return 0;
-	return fread(file->data, sizeof(uint8_t), file->datalen, file->fs);
+	return fread(file->data, file->samplen, file->datalen, file->fs);
 }
 
 size_t wav_write(t_wavfile * file)
 {
 	if (file == NULL || file->fs == NULL)
 		return 0;
-	return fwrite(file->data, sizeof(uint8_t), file->datalen, file->fs);
+	return fwrite(file->data, file->samplen, file->datalen, file->fs);
 }
 
 void wav_buffclear(t_wavfile * file)
 {
 	if (file)
-		memset(file->data, 0, file->datalen);
+		memset(file->data, 0, file->datalen * file->samplen);
 }
 
 void	wav_close(t_wavfile **wavfile)
