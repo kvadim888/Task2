@@ -2,19 +2,7 @@
 #include <stdlib.h>
 #include "libwav.h"
 #include "libfix.h"
-#include <math.h>
-
-typedef	union
-{
-	uint8_t		bytes[2];
-	uint16_t	word;
-}				t_buffer;
-
-int32_t		fix_scale(double gain)
-{
-	double scale = pow(10, gain / 20);
-	return float_to_fix(scale);
-}
+#include "libdsp.h"
 
 int main(int ac, char **av)
 {
@@ -29,22 +17,23 @@ int main(int ac, char **av)
 	}
 	t_wavfile *input = wav_rdopen(av[1]);
 	t_wavfile *output = wav_wropen(av[2], &input->header);
-	double	gain = atof(av[3]);
-//	double	gain = 0;
-	int32_t scale = fix_scale(gain);
-	printf("\n scale = %.8f\n Control: 20log(%.8f)=%.8f\n", fix_to_float(scale), fix_to_float(scale), gain);
-	buffer_in = input->data;
-	buffer_out = output->data;
+	int32_t gain = dsp_db2gain(atof(av[3]));
+
+	printf("\n gain = %.8f\n Control: 20log(%.8f)=%.8f\n",
+			fix_to_float(gain), fix_to_float(gain), atof(av[3]));
+
+	buffer_in = input->buffer.data;
+	buffer_out = output->buffer.data;
+
 	while ((len = wav_read(input)) > 0)
 	{
 		wav_buffclear(output);
-		for (int i = 0; i < input->datalen; i++)
-			buffer_out[i] = (int16_t)fix_mul(buffer_in[i], scale);
+		for (int i = 0; i < input->buffer.datalen; i++)
+			buffer_out[i] = (int16_t)fix_mul(buffer_in[i], gain);
 		wav_write(output);
 		wav_buffclear(input);
 	}
 
-	wav_info(av[2], &output->header);
 	wav_close(&input);
 	wav_close(&output);
 	return 0;

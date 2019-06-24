@@ -16,9 +16,9 @@ t_wavfile *wav_rdopen(const char *path)
 		exit(1);
 	}
 	wav_info(path, &wavfile->header);
-	wavfile->data = calloc(100, (wavfile->header.channels * wavfile->header.bits_per_sample) / 8);
-	wavfile->samplen = wavfile->header.bits_per_sample / 8;
-	wavfile->datalen = 100 * wavfile->header.channels;
+	wavfile->buffer.data = calloc(100, (wavfile->header.channels * wavfile->header.bits_per_sample) / 8);
+	wavfile->buffer.samplen = wavfile->header.bits_per_sample / 8;
+	wavfile->buffer.datalen = 100 * wavfile->header.channels;
 	return (wavfile);
 }
 
@@ -39,9 +39,9 @@ t_wavfile *wav_wropen(const char *path, t_wavheader *header)
 		exit(1);
 	}
 	wav_info(path, &wavfile->header);
-	wavfile->data = calloc(100, (wavfile->header.channels * wavfile->header.bits_per_sample) / 8);
-	wavfile->samplen = wavfile->header.bits_per_sample / 8;
-	wavfile->datalen = 100 * wavfile->header.channels;
+	wavfile->buffer.data = calloc(100, (wavfile->header.channels * wavfile->header.bits_per_sample) / 8);
+	wavfile->buffer.samplen = wavfile->header.bits_per_sample / 8;
+	wavfile->buffer.datalen = 100 * wavfile->header.channels;
 	return (wavfile);
 }
 
@@ -49,20 +49,20 @@ size_t wav_read(t_wavfile * file)
 {
 	if (file == NULL || file->fs == NULL)
 		return 0;
-	return fread(file->data, file->samplen, file->datalen, file->fs);
+	return fread(file->buffer.data, file->buffer.samplen, file->buffer.datalen, file->fs);
 }
 
 size_t wav_write(t_wavfile * file)
 {
 	if (file == NULL || file->fs == NULL)
 		return 0;
-	return fwrite(file->data, file->samplen, file->datalen, file->fs);
+	return fwrite(file->buffer.data, file->buffer.samplen, file->buffer.datalen, file->fs);
 }
 
 void wav_buffclear(t_wavfile * file)
 {
 	if (file)
-		memset(file->data, 0, file->datalen * file->samplen);
+		memset(file->buffer.data, 0, file->buffer.datalen * file->buffer.samplen);
 }
 
 void	wav_close(t_wavfile **wavfile)
@@ -70,8 +70,8 @@ void	wav_close(t_wavfile **wavfile)
 	if (!wavfile && !*wavfile)
 		return;
 	printf("file closing\n");
-	if ((*wavfile)->data != NULL)
-		free((*wavfile)->data);
+	if ((*wavfile)->buffer.data != NULL)
+		free((*wavfile)->buffer.data);
 	free(*wavfile);
 	*wavfile = NULL;
 }

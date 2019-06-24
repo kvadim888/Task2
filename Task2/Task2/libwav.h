@@ -25,13 +25,18 @@ typedef struct s_wavheader
 	uint32_t	data_size;				// NumSamples * NumChannels * BitsPerSample/8 - size of the next chunk that will be read
 }				t_wavheader;
 
+typedef struct
+{
+	uint8_t		*data;
+	size_t		datalen;
+	size_t		samplen;
+}				t_wavbuffer;
+
 typedef	struct
 {
 	FILE		*fs;
 	t_wavheader header;
-	uint8_t		*data;
-	size_t		datalen;
-	size_t		samplen;
+	t_wavbuffer	buffer;
 }		t_wavfile;
 
 #pragma pack(pop)
@@ -49,9 +54,9 @@ void		wav_close(t_wavfile **wavfile);
 
 /* byte little endian to big and vise a versa */
 
-uint16_t swap_uint16(uint16_t val);
-int16_t swap_int16(int16_t val);
-uint32_t swap_uint32(uint32_t val);
-int32_t swap_int32(int32_t val);
+uint16_t	swap_uint16(uint16_t val);
+int16_t		swap_int16(int16_t val);
+uint32_t	swap_uint32(uint32_t val);
+int32_t		swap_int32(int32_t val);
 
 #endif

@@ -15,7 +15,7 @@ int32_t	float_to_fix(double num)
 
 double	fix_to_float(int32_t num)
 {
-	return (num / SCALE);
+	return num / SCALE;
 }
 
 int32_t	fix_saturate(int64_t num)
@@ -27,7 +27,7 @@ int32_t	fix_saturate(int64_t num)
 	if (num < (int64_t)INT32_MIN)
 		return (INT32_MIN);
 	tmp.num = num;
-	return (tmp.range[0]);
+	return tmp.range[0];
 }
 
 int32_t	fix_round(int64_t num)

@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="libdsp.c" />
     <ClCompile Include="libfix.c" />
     <ClCompile Include="libwav.c" />
     <ClCompile Include="main.c" />
@@ -157,6 +158,7 @@
     <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\stdio.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\stdlib.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\string.h" />
+    <ClInclude Include="libdsp.h" />
     <ClInclude Include="libfix.h" />
     <ClInclude Include="libwav.h" />
   </ItemGroup>
